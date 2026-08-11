@@ -1,0 +1,17 @@
+# Archivos de pruebas y capturas de red
+*.cap
+*.pcap
+*.pcapng
+
+# Base de datos y Alertas (Servidor)
+WIDS_SERVER/data/wids_central.db
+WIDS_SERVER/data/alertas_wids.json
+WIDS_SERVER/data/alertas_wids.json.*
+
+# Archivos de configuración con información sensible
+WIDS_SERVER/config/wids_config.json
+
+# Archivos de Python y sistema
+__pycache__/
+*.pyc
+.env

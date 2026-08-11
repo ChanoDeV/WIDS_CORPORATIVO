@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  wids-central:
+    build: .
+    container_name: wids_madrid
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GUNICORN_CMD_ARGS=--access-logfile -
+      - WIDS_USER=admin
+      - WIDS_PASS=PassSuperSegura!
+      - WIDS_CONFIG_PATH=/config/wids_config.json
+      - WIDS_LOG_PATH=/data/alertas_wids.json
+      - WIDS_DB_PATH=/data/wids_central.db
+    volumes:
+      - ./config:/config
+      - ./data:/data
