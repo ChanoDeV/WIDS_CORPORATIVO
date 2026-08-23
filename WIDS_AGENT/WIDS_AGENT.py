@@ -1,3 +1,4 @@
+import os
 import argparse
 import hashlib
 import json
@@ -22,12 +23,14 @@ class AgenteWIDS:
         self.canales_hopper = [int(c.strip()) for c in canales.split(",")]
         self.hopper_activo = False
         self.hilo_hopper = None
+        self.id_agente = os.getenv('ID_AGENTE', 'AGENTE_DESCONOCIDO')
+        self.certificado = os.getenv('RUTA_CERTIFICADO', False)
 
     def solicitar_configuracion(self):
         print(f"[*] Esperando al Servidor Central en {self.url_servidor}...")
         while True:
             try:
-                respuesta = requests.get(f"{self.url_servidor}/api/config", auth=self.auth_creds, timeout=5)
+                respuesta = requests.get(f"{self.url_servidor}/api/config", auth=self.auth_creds, verify=self.certificado, timeout=5)
                 respuesta.raise_for_status()
                 config = respuesta.json()
                 self.ssid_corporativo = config["general"]["ssid_corporativo"]
@@ -39,12 +42,12 @@ class AgenteWIDS:
 
     def enviar_alerta(self, alerta):
         try:
-            requests.post(f"{self.url_servidor}/api/alerta", json=alerta, auth=self.auth_creds, timeout=2)
+            requests.post(f"{self.url_servidor}/api/alerta", json=alerta, auth=self.auth_creds, verify=self.certificado, timeout=2)
         except: pass 
 
     def enviar_telemetria(self, datos_ap):
         try:
-            requests.post(f"{self.url_servidor}/api/telemetria", json=datos_ap, auth=self.auth_creds, timeout=2)
+            requests.post(f"{self.url_servidor}/api/telemetria", json=datos_ap, auth=self.auth_creds, verify=self.certificado, timeout=2)
         except: pass
 
     def generar_fingerprint(self, bssid, ssid, canal, vht):
@@ -93,7 +96,8 @@ class AgenteWIDS:
                     "@timestamp": datetime.utcnow().isoformat() + "Z",
                     "event": {"module": "wids", "action": "volumetric_dos_detected", "severity": 10},
                     "source": {"mac": mac_sospechosa},
-                    "message": f"CRITICO: Pico anómalo de tráfico (> {self.umbral_dos_pps} tramas/segundo)."
+                    "message": f"CRITICO: Pico anómalo de tráfico (> {self.umbral_dos_pps} tramas/segundo).",
+                    "agente": self.id_agente
                 }
                 print(f"[!] ALERTA LOCAL: Ataque DoS detectado desde {mac_sospechosa}")
                 self.enviar_alerta(alerta)
@@ -128,7 +132,8 @@ class AgenteWIDS:
                     fingerprint = self.generar_fingerprint(bssid, ssid, canal, soporta_vht)
                     datos_telemetria = {
                         "bssid": bssid, "ssid": ssid, "canal": canal, 
-                        "vht": soporta_vht, "fingerprint": fingerprint
+                        "vht": soporta_vht, "fingerprint": fingerprint,
+                        "agente": self.id_agente
                     }
                     print(f"[*] Nuevo AP interceptado: SSID '{ssid}' con MAC {bssid}. Enviando a la API...")
                     self.enviar_telemetria(datos_telemetria)

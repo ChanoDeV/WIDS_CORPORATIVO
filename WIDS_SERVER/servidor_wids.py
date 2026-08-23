@@ -117,6 +117,7 @@ class ServidorWIDS:
                 if id_alerta not in self.alertas_enviadas_sesion:
                     alerta = {
                         "@timestamp": datetime.utcnow().isoformat() + "Z",
+                        "agent": {"name": datos.get("agente", "AGENTE_DESCONOCIDO")},
                         "event": {"module": "wids", "action": "hardware_downgrade", "severity": 9},
                         "wifi": {"bssid": bssid, "ssid": ssid},
                         "message": f"CRITICO: El BSSID {bssid} ha mutado su hardware. Posible Evil Twin. Fingerprint anómalo: {fingerprint_recibido}"
@@ -130,6 +131,7 @@ class ServidorWIDS:
             if id_alerta not in self.alertas_enviadas_sesion:
                 alerta = {
                     "@timestamp": datetime.utcnow().isoformat() + "Z",
+                    "agent": {"name": datos.get("agente", "AGENTE_DESCONOCIDO")},
                     "event": {"module": "wids", "action": "rogue_ap_detected", "severity": 8},
                     "wifi": {"bssid": bssid, "ssid": ssid},
                     "message": f"ALERTA: Nuevo Rogue AP detectado emitiendo el SSID '{ssid}'"
